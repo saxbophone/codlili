@@ -62,6 +62,12 @@ namespace com::saxbophone::codlili {
          * or _base_index that change.
          * - using std::span might not actually simplify the implementation, but
          * it is worth considering.
+         * - IMPORTANT: we might need to have _storage as an array of bytes instead
+         * and use placement new to construct new objects of T into it --otherwise
+         * when we allocate space for new T objects (but without setting them),
+         * instances of T that are default-constructed will be created, which
+         * violates the implication that unused allocated storage is... well,
+         * allocated but unused (i.e. allocated but not constructed).
          */
         T* _storage; // heap-allocated array for storing elements in
         std::size_t _storage_size; // the size of the heap-allocated array
