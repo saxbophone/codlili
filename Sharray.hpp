@@ -44,6 +44,15 @@ namespace com::saxbophone::codlili {
          * - we avoid the need to always resize on push_front by shifting
          * _base_index down to move the "start" of the array down by one element
          * and hence also avoid needing to move the other elements
+         * IMPLEMENTATION NOTES:
+         * - if we really want to, we can use std::span to simplify element
+         * access by making an "elements" span for the subset of storage that is
+         * actually in use, as `std::span<T>(_storage + _base_index, _length)`
+         * - this "elements" span would need to be overwritten every time the
+         * size of the container changes, whether that be _length, _storage_size
+         * or _base_index that change.
+         * - using std::span might not actually simplify the implementation, but
+         * it is worth considering.
          */
         T* _storage; // heap-allocated array for storing elements in
         std::size_t _storage_size; // the size of the heap-allocated array
