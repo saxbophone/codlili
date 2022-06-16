@@ -32,6 +32,4 @@ enable_testing()
 # auto-discover and add Catch2 tests from unit tests program
 include(CTest)
 include(Catch)
-
-# TODO: we might consider having one separate test executable per part, but not for now
-catch_discover_tests(tests WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+catch_discover_tests(tests)
