@@ -8,7 +8,7 @@ CPMFindPackage(
 add_executable(tests)
 target_sources(
     tests PRIVATE
-        Container.cpp
+        ReversibleContainer.cpp
 )
 target_link_libraries(
     tests PRIVATE
