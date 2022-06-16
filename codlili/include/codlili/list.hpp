@@ -1,14 +1,5 @@
 /*
- * codlili v0.3.0
- *
- * /kɒdliːliː/
- *
- * - COnstexpr
- * - Doubly
- * - LInked
- * - LIst
- *
- * Created by Joshua Saxby <joshua.a.saxby@gmail.com>, May 2022
+ * Created by Joshua Saxby <joshua.a.saxby@gmail.com>, June 2022
  * Copyright Joshua Saxby <joshua.a.saxby@gmail.com> 2022
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -27,7 +18,7 @@
 
 namespace com::saxbophone::codlili {
     template <typename T>  // the type of elements to store
-    class List {
+    class list {
     public:
         // simple record type for the doubly-linked-list nodes
         struct ListNode {
@@ -75,30 +66,30 @@ namespace com::saxbophone::codlili {
         using reference = T&;
         using const_reference = const T&;
         // initialises size to zero, an empty list
-        constexpr List() noexcept {}
+        constexpr list() noexcept {}
         // initialises list with the specified number of default-constructed elements
-        constexpr List(std::size_t size) : List(size, T{}) {} // reuse (size,value) ctor
+        constexpr list(std::size_t size) : list(size, T{}) {} // reuse (size,value) ctor
         // initialises list with the given elements
-        constexpr List(std::initializer_list<T> elements) {
+        constexpr list(std::initializer_list<T> elements) {
             for (auto element : elements) {
                 push_back(element);
             }
         }
         // initialises list with the specified number of this element value-copied
-        constexpr List(std::size_t size, const_reference value) {
+        constexpr list(std::size_t size, const_reference value) {
             for (std::size_t i = 0; i < size; i++) {
                 push_back(value);
             }
         }
         /* rule of three: */
         // copy constructor
-        constexpr List(const List& other) {
+        constexpr list(const list& other) {
             for (auto element : other) {
                 push_back(element);
             }
         }
         // destructor, needed because there is manual memory management
-        constexpr ~List() {
+        constexpr ~list() {
             // delete the entire chain of ListNode pointers
             auto cursor = _back;
             while (cursor != nullptr) {
@@ -110,7 +101,7 @@ namespace com::saxbophone::codlili {
             _back = nullptr;
         }
         // copy assignment operator
-        constexpr List& operator=(const List& other) noexcept {
+        constexpr list& operator=(const list& other) noexcept {
             clear();
             for (auto element : other) {
                 push_back(element);
@@ -118,7 +109,7 @@ namespace com::saxbophone::codlili {
             return *this;
         }
         /* element access */
-        // TODO: make these trap when accessed on an empty List
+        // TODO: make these trap when accessed on an empty list
         // get reference to first element
         constexpr reference front() { return this->_front->value; }
         // get read-only reference to first element
@@ -231,13 +222,13 @@ namespace com::saxbophone::codlili {
             }
         }
         // exchanges this list's contents with that of the other
-        constexpr void swap(List& other) noexcept {
+        constexpr void swap(list& other) noexcept {
             // swapping the front and back pointers should be enough to exchange contents
             std::swap(_front, other._front);
             std::swap(_back, other._back);
         }
         /* comparison */
-        constexpr bool operator==(const List& other) const {
+        constexpr bool operator==(const list& other) const {
             return std::equal(begin(), end(), other.begin(), other.end());
         }
     private:

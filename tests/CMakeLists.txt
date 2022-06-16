@@ -5,16 +5,6 @@ CPMFindPackage(
     EXCLUDE_FROM_ALL YES
 )
 
-# common option-propagating target to use for test suite sub-targets
-add_library(tests-config INTERFACE)
-target_link_libraries(
-    tests-config
-    INTERFACE
-        codlili-compiler-options  # tests use same compiler options as main project
-        codlili
-        Catch2::Catch2  # unit testing framework
-)
-
 add_executable(tests)
 target_sources(
     tests PRIVATE

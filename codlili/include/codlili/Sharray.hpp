@@ -16,18 +16,19 @@
 namespace com::saxbophone::codlili {
     /**
      * @brief A contiguous container type with both vector<> and deque<> semantics
-     * @details Sharray supports insertion at both the front and end, like `std::deque<>`.
-     * Like `std::vector<>`, Sharray also stores its elements contiguously.
+     * @details sharray supports insertion at both the front and end, like
+     * `std::deque<>`.
+     * Like `std::vector<>`, sharray also stores its elements contiguously.
      * @tparam T the type of elements to store
      */
     template <typename T>
-    class Sharray {
+    class sharray {
     public:
         using reference = T&;
         using const_reference = const T&;
         // NOTE: not all public methods intended for implementation are shown
-        constexpr Sharray();
-        constexpr ~Sharray();
+        constexpr sharray();
+        constexpr ~sharray();
         constexpr reference operator[](std::size_t pos);
         constexpr const_reference operator[](std::size_t pos) const;
         constexpr bool empty() const noexcept;
