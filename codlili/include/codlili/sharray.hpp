@@ -14,7 +14,8 @@
 
 #include <initializer_list> // initializer_list
 #include <memory>           // allocator, allocator_traits
-#include <span>
+#include <span>             // span
+#include <utility>          // pair
 
 
 namespace com::saxbophone::codlili {
@@ -37,9 +38,9 @@ namespace com::saxbophone::codlili {
         using pointer = typename std::allocator_traits<Allocator>::pointer;
         using const_pointer = typename std::allocator_traits<Allocator>::const_pointer;
         using iterator = std::span<T>::iterator;
-        // using const_iterator = std::span<T>::const_iterator; // NB: not defined in the standard?
+        using const_iterator = std::span<const T>::iterator;
         using reverse_iterator = std::span<T>::reverse_iterator;
-        // using const_reverse_iterator = std::span<T>::const_reverse_iterator; // NB: not defined in the standard?
+        using const_reverse_iterator = std::span<const T>::reverse_iterator; // NB: not defined in the standard?
         // member functions
         constexpr sharray() {}
         constexpr explicit sharray(const Allocator& alloc) {}
@@ -63,9 +64,9 @@ namespace com::saxbophone::codlili {
             std::initializer_list<T> init, const Allocator& alloc = Allocator()
         ) {}
         constexpr ~sharray() {}
-        constexpr sharray& operator=(const sharray& other) { return this; }
-        constexpr sharray& operator=(sharray&& other) noexcept { return this; }
-        constexpr sharray& operator=(std::initializer_list<T> ilist) { return this; }
+        constexpr sharray& operator=(const sharray& other) { return *this; }
+        constexpr sharray& operator=(sharray&& other) noexcept { return *this; }
+        constexpr sharray& operator=(std::initializer_list<T> ilist) { return *this; }
         constexpr void assign(size_type count, const T& value) {}
         template<class InputIt>
         constexpr void assign(InputIt first, InputIt last) {}
@@ -87,17 +88,17 @@ namespace com::saxbophone::codlili {
         constexpr const T* data() const noexcept { return _elements().data(); }
         // iterators
         constexpr iterator begin() noexcept { return _elements().begin(); }
-        // constexpr const_iterator begin() const noexcept { return _elements().begin(); }
-        // constexpr const_iterator cbegin() const noexcept { return _elements().cbegin(); }
+        constexpr const_iterator begin() const noexcept { return _elements().begin(); }
+        constexpr const_iterator cbegin() const noexcept { return _elements().begin(); }
         constexpr iterator end() noexcept { return _elements().end(); }
-        // constexpr const_iterator end() const noexcept { return _elements().end(); }
-        // constexpr const_iterator cend() const noexcept { return _elements().cend(); }
+        constexpr const_iterator end() const noexcept { return _elements().end(); }
+        constexpr const_iterator cend() const noexcept { return _elements().end(); }
         constexpr reverse_iterator rbegin() noexcept { return _elements().rbegin(); }
-        // constexpr const_reverse_iterator rbegin() const noexcept { return _elements().rbegin(); }
-        // constexpr const_reverse_iterator crbegin() const noexcept { return _elements().crbegin(); }
+        constexpr const_reverse_iterator rbegin() const noexcept { return _elements().rbegin(); }
+        constexpr const_reverse_iterator crbegin() const noexcept { return _elements().rbegin(); }
         constexpr reverse_iterator rend() noexcept { return _elements().rend(); }
-        // constexpr const_reverse_iterator rend() const noexcept { return _elements().rend(); }
-        // constexpr const_reverse_iterator crend() const noexcept { return _elements().crend(); }
+        constexpr const_reverse_iterator rend() const noexcept { return _elements().rend(); }
+        constexpr const_reverse_iterator crend() const noexcept { return _elements().rend(); }
         // capacity
         [[nodiscard]] constexpr bool empty() const noexcept {
             return _elements().empty();
@@ -106,7 +107,7 @@ namespace com::saxbophone::codlili {
         constexpr size_type max_size() const noexcept;
         constexpr void reserve(size_type new_cap) {}
         // pair of sizes for cap denotes elements to reserve before and after front
-        constexpr void reserve(std::pair<size_type> bidir_cap) {}
+        constexpr void reserve(std::pair<size_type, size_type> bidir_cap) {}
         constexpr size_type capacity() const noexcept { return _storage.size(); }
         constexpr void shrink_to_fit() {}
         // modifiers
@@ -140,10 +141,13 @@ namespace com::saxbophone::codlili {
         constexpr void resize(size_type count) {}
         constexpr void resize(size_type count, const value_type& value) {}
         // pair of counts is defined as number to have before the front of the array and the number to have after it
-        constexpr void resize(std::pair<size_type> count) {}
-        constexpr void resize(std::pair<size_type> count, const value_type& value) {}
+        constexpr void resize(std::pair<size_type, size_type> count) {}
+        constexpr void resize(std::pair<size_type, size_type> count, const value_type& value) {}
         constexpr void swap(sharray& other) noexcept {}
         // TODO: non-member functions
+        // XXX: dirty stub just to get code to compile
+        template <typename Anything>
+        constexpr bool operator==(const Anything&) const { return false; }
     private:
         // accessors to the actual elements in the sharray, using span as a shortcut
         constexpr std::span<T> _elements() {

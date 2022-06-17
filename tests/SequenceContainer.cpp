@@ -23,9 +23,9 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using iterator = X::iterator;
     using const_iterator = X::const_iterator;
     X a = X({1, 2, 3, 4, 5, 6, 7});
-    const_iterator p = a.end(); // one past-the-end, valid but not dereferenceable
-    const_iterator q = a.begin()++++++; // middle of the container, dereferenceable
-    const_iterator q1 = a.begin(), q2 = a.end(); // two const iterators into a such that [q1, q2) is a valid range
+    const_iterator p = a.cend(); // one past-the-end, valid but not dereferenceable
+    const_iterator q = a.cbegin()++++++; // middle of the container, dereferenceable
+    const_iterator q1 = a.cbegin(), q2 = a.cend(); // two const iterators into a such that [q1, q2) is a valid range
     T other[] = {3, 4, 1, 2, 3, 6, 8, 9, 2, 4};
     auto i = other, j = other + 4; // LegacyInputIterators such that [i, j) is a valid range and that the iterators
                                    // refer to elements implicitly convertible to value_type
