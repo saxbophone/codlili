@@ -13,7 +13,7 @@ using namespace com::saxbophone;
 
 TEMPLATE_PRODUCT_TEST_CASE(
     "Type satisfies the Container named requirement", "",
-    (std::deque, /*std::list, */std::vector), (char, int, long, float)
+    (std::deque, std::list, std::vector), (char, int, long, float)
 ) {
     // alias key definitions to the names used for them in the C++ named requirements
     using C = TestType;
@@ -26,8 +26,6 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using size_type = C::size_type;
 
     C a = {1, 2, 3}, b = {4, 5, 6}; // a, b --objects of type C
-    C&& rv = std::move(C({7, 8, 9})); // rv --a prvalue expression of type C --XXX: It's actually an xvalue here...
-    C old_rvalue = { 7, 8, 9 };
 
     SECTION("C() creates an empty container") {
         CHECK(C().empty());
@@ -36,7 +34,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
         CHECK(a == C(a));
     }
     SECTION("C(rv) moves rv") {
-        CHECK(C(rv) == old_rvalue);
+        CHECK(C(C({7, 8, 9})) == C({7, 8, 9}));
     }
     SECTION("a = b destroys or copy-assigns all elements of a from elements of b") {
         CHECK(typeid(a = b) == typeid(C&)); // typeid has no side-effects
@@ -45,10 +43,10 @@ TEMPLATE_PRODUCT_TEST_CASE(
         CHECK(a == b);
     }
     SECTION("a = rv destroys or move-assigns all elements of a from elements of rv") {
-        CHECK(typeid(a = rv) == typeid(C&));
-        a = rv;
+        CHECK(typeid(a = C({7, 8, 9})) == typeid(C&));
+        a = C({7, 8, 9});
 
-        CHECK(a == old_rvalue);
+        CHECK(a == C({7, 8, 9}));
     }
     SECTION("a.begin() returns Iterator to the first element of a") {
         CHECK(
@@ -105,7 +103,6 @@ TEMPLATE_PRODUCT_TEST_CASE(
     SECTION("a.empty()") {
         CHECK_FALSE(a.empty());
         CHECK_FALSE(b.empty());
-        CHECK_FALSE(rv.empty());
         CHECK(C().empty());
     }
 }

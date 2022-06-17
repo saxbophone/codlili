@@ -31,5 +31,4 @@ TEMPLATE_PRODUCT_TEST_CASE(
     std::initializer_list<T> il = {3, 6, 9, 12, 14, 16, 18, 23}; // an object of type std::initializer_list<value_type>
     typename X::size_type n = 3; // a value of type X::size_type
     T t = 13; // an lvalue or const rvalue of type X::value_type
-    T&& rv = 24; // a non-const rvalue of type X::value_type
 }
