@@ -14,6 +14,7 @@
 
 #include <initializer_list> // initializer_list
 #include <memory>           // allocator, allocator_traits
+#include <span>
 
 
 namespace com::saxbophone::codlili {
@@ -35,10 +36,10 @@ namespace com::saxbophone::codlili {
         using const_reference = const T&;
         using pointer = typename std::allocator_traits<Allocator>::pointer;
         using const_pointer = typename std::allocator_traits<Allocator>::const_pointer;
-        // using iterator = ...;
-        // using const_iterator = ...;
-        // using reverse_iterator = ...;
-        // using const_reverse_iterator = ...;
+        using iterator = std::span<T>::iterator;
+        using const_iterator = std::span<T>::const_iterator; // NB: not defined in the standard?
+        using reverse_iterator = std::span<T>::reverse_iterator;
+        using const_reverse_iterator = std::span<T>::const_reverse_iterator; // NB: not defined in the standard?
         // member functions
         constexpr sharray();
         constexpr explicit sharray(const Allocator& alloc);
@@ -138,10 +139,17 @@ namespace com::saxbophone::codlili {
         constexpr void swap(sharray& other) noexcept;
         // TODO: non-member functions
     private:
+        // accessors to the actual elements in the sharray, using span as a shortcut
+        constexpr std::span<T> _elements() {
+            return _storage.subspan(_base_index, _size);
+        }
+        constexpr std::span<const T> _elements() const {
+            return _storage.subspan(_base_index, _size);
+        }
         /*
          * NOTES:
-         * - _storage_size can be greater than _length
-         * - _storage_size MUST NOT be less than _base_index + _length
+         * - _storage_size can be greater than _size
+         * - _storage_size MUST NOT be less than _base_index + _size
          * - we initialise _base_index to be halfway through _storage
          * - every time we need to re-allocate storage to resize, we maintain
          * _base_index to be halfway through _storage
@@ -151,9 +159,9 @@ namespace com::saxbophone::codlili {
          * IMPLEMENTATION NOTES:
          * - if we really want to, we can use std::span to simplify element
          * access by making an "elements" span for the subset of storage that is
-         * actually in use, as `std::span<T>(_storage + _base_index, _length)`
+         * actually in use, as `std::span<T>(_storage + _base_index, _size)`
          * - this "elements" span would need to be overwritten every time the
-         * size of the container changes, whether that be _length, _storage_size
+         * size of the container changes, whether that be _size, _storage_size
          * or _base_index that change.
          * - using std::span might not actually simplify the implementation, but
          * it is worth considering.
@@ -164,10 +172,9 @@ namespace com::saxbophone::codlili {
          * violates the implication that unused allocated storage is... well,
          * allocated but unused (i.e. allocated but not constructed).
          */
-        T* _storage; // heap-allocated array for storing elements in
-        std::size_t _storage_size; // the size of the heap-allocated array
+        std::span<T> _storage; // heap-allocated array for storing elements in and its size, wrapped in a span
         std::size_t _base_index; // 0-based index of first element in _storage to use
-        std::size_t _length; // length of stored items
+        std::size_t _size; // number of stored items
     };
 }
 
