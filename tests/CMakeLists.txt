@@ -8,6 +8,7 @@ CPMFindPackage(
 add_executable(tests)
 target_sources(
     tests PRIVATE
+        Container.cpp
         SequenceContainer.cpp
 )
 target_link_libraries(
