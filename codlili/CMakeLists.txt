@@ -21,46 +21,43 @@ set_property(
     APPEND PROPERTY COMPATIBLE_INTERFACE_STRING "${Codlili_MAJOR_VERSION}.${Codlili_MINOR_VERSION}"
 )
 
-# install if we're not being built as a sub-project
-if (NOT CODLILI_SUBPROJECT)
-    # library
-    install(
-        TARGETS codlili
-        EXPORT CodliliTargets
-        # when a static library
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        # when a shared library on UNIX
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        # when a DLL on Windows
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-    # public headers
-    install(
-        DIRECTORY "include/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
-    # CMake package
-    include(CMakePackageConfigHelpers)
-    configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/CodliliConfig.cmake"
-        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Codlili"
-    )
-    # CMake export
-    install(
-        EXPORT CodliliTargets
-        FILE CodliliTargets.cmake
-        NAMESPACE Codlili::
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Codlili"
-    )
-    # generate the version file for the config file
-    write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/CodliliConfigVersion.cmake"
-        VERSION "${version}"
-        COMPATIBILITY SameMinorVersion
-    )
-    install(
-        FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/CodliliConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/CodliliConfigVersion.cmake"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Codlili"
-    )
-endif()
+# library
+install(
+    TARGETS codlili
+    EXPORT CodliliTargets
+    # when a static library
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    # when a shared library on UNIX
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    # when a DLL on Windows
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+# public headers
+install(
+    DIRECTORY "include/" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+# CMake package
+include(CMakePackageConfigHelpers)
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/CodliliConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Codlili"
+)
+# CMake export
+install(
+    EXPORT CodliliTargets
+    FILE CodliliTargets.cmake
+    NAMESPACE Codlili::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Codlili"
+)
+# generate the version file for the config file
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/CodliliConfigVersion.cmake"
+    VERSION "${version}"
+    COMPATIBILITY SameMinorVersion
+)
+install(
+    FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/CodliliConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/CodliliConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Codlili"
+)
