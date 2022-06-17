@@ -21,7 +21,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using iterator = C::iterator;
     using const_iterator = C::const_iterator;
     // using difference_type = C::difference_type;
-    // using size_type = C::size_type;
+    using size_type = C::size_type;
 
     C a = {1, 2, 3}, b = {4, 5, 6}; // a, b --objects of type C
     auto rv = std::move(C({7, 8, 9})); // rv --a prvalue expression of type C --XXX: It's actually an xvalue here...
@@ -63,5 +63,47 @@ TEMPLATE_PRODUCT_TEST_CASE(
                 typeid(a.end()) == typeid(const_iterator)
             )
         );
+    }
+    SECTION("a.cbegin() returns const_cast<const C&>(a).begin()") {
+        CHECK(a.cbegin() == const_cast<const C&>(a).begin());
+    }
+    SECTION("a.cend() returns const_cast<const C&>(a).end()") {
+        CHECK(a.cend() == const_cast<const C&>(a).end());
+    }
+    SECTION("a == b") {
+        CHECK_FALSE(a == b);
+        CHECK(a == C({1, 2, 3}));
+        CHECK(a == a);
+        CHECK(b == b);
+    }
+    SECTION("a != b") {
+        CHECK(a != b);
+        CHECK_FALSE(a != C({1, 2, 3}));
+        CHECK_FALSE(a != a);
+        CHECK_FALSE(b != b);
+    }
+    SECTION("a.swap(b) exchanges the values of a and b") {
+        a.swap(b);
+
+        CHECK(a == C({4, 5, 6}));
+        CHECK(b == C({1, 2, 3}));
+    }
+    SECTION("swap(a, b) is equivalent to a.swap(b)") {
+        std::swap(a, b);
+
+        CHECK(a == C({4, 5, 6}));
+        CHECK(b == C({1, 2, 3}));
+    }
+    SECTION("a.size()") {
+        CHECK(a.size() == (size_type)3);
+    }
+    SECTION("a.max_size()") {
+        CHECK(typeid(a.max_size()) == typeid(size_type));
+    }
+    SECTION("a.empty()") {
+        CHECK_FALSE(a.empty());
+        CHECK_FALSE(b.empty());
+        CHECK_FALSE(rv.empty());
+        CHECK(C().empty());
     }
 }
