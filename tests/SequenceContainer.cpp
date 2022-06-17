@@ -16,7 +16,8 @@ TEMPLATE_PRODUCT_TEST_CASE(
     (std::deque, std::list, std::vector), (char, int, long, float)
 ) {
     // alias key definitions to the names used for them in the C++ named requirements
-    // using X = TestType;
+    using X = TestType;
     // using T = X::value_type;
     // using A = X::allocator_type;
+    X&& a = std::move(X({1, 2, 3}));
 }

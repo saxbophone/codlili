@@ -13,7 +13,7 @@ using namespace com::saxbophone;
 
 TEMPLATE_PRODUCT_TEST_CASE(
     "Type satisfies the Container named requirement", "",
-    (std::deque, std::list, std::vector), (char, int, long, float)
+    (std::deque, /*std::list, */std::vector), (char, int, long, float)
 ) {
     // alias key definitions to the names used for them in the C++ named requirements
     using C = TestType;
@@ -26,7 +26,7 @@ TEMPLATE_PRODUCT_TEST_CASE(
     using size_type = C::size_type;
 
     C a = {1, 2, 3}, b = {4, 5, 6}; // a, b --objects of type C
-    auto rv = std::move(C({7, 8, 9})); // rv --a prvalue expression of type C --XXX: It's actually an xvalue here...
+    C&& rv = std::move(C({7, 8, 9})); // rv --a prvalue expression of type C --XXX: It's actually an xvalue here...
     C old_rvalue = { 7, 8, 9 };
 
     SECTION("C() creates an empty container") {
