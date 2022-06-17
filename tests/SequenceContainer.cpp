@@ -1,6 +1,8 @@
+#include <deque>
 #include <list>
 #include <typeinfo>
 #include <utility>
+#include <vector>
 
 #include <catch2/catch_all.hpp>
 
@@ -10,8 +12,8 @@
 using namespace com::saxbophone;
 
 TEMPLATE_PRODUCT_TEST_CASE(
-    "list types satisfy the Container named requirement", "",
-    (std::list/*, codlili::list*/), (char, int, long, float)
+    "Type satisfies the SequenceContainer named requirement", "",
+    (std::deque, std::list, std::vector), (char, int, long, float)
 ) {
     // alias key definitions to the names used for them in the C++ named requirements
     using C = TestType;
@@ -106,4 +108,5 @@ TEMPLATE_PRODUCT_TEST_CASE(
         CHECK_FALSE(rv.empty());
         CHECK(C().empty());
     }
+    // end of Container named requirement (sub-requirement of SequenceContainer)
 }
