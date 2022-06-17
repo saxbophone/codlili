@@ -37,106 +37,112 @@ namespace com::saxbophone::codlili {
         using pointer = typename std::allocator_traits<Allocator>::pointer;
         using const_pointer = typename std::allocator_traits<Allocator>::const_pointer;
         using iterator = std::span<T>::iterator;
-        using const_iterator = std::span<T>::const_iterator; // NB: not defined in the standard?
+        // using const_iterator = std::span<T>::const_iterator; // NB: not defined in the standard?
         using reverse_iterator = std::span<T>::reverse_iterator;
-        using const_reverse_iterator = std::span<T>::const_reverse_iterator; // NB: not defined in the standard?
+        // using const_reverse_iterator = std::span<T>::const_reverse_iterator; // NB: not defined in the standard?
         // member functions
-        constexpr sharray();
-        constexpr explicit sharray(const Allocator& alloc);
+        constexpr sharray() {}
+        constexpr explicit sharray(const Allocator& alloc) {}
         constexpr sharray(
             size_type count,
             const T& value = T(),
             const Allocator& alloc = Allocator()
-        );
+        ) {}
         constexpr explicit sharray(
             size_type count, const Allocator& alloc = Allocator()
-        );
+        ) {}
         template<class InputIt>
         constexpr sharray(
             InputIt first, InputIt last, const Allocator& alloc = Allocator()
-        );
-        constexpr sharray(const sharray& other);
-        constexpr sharray(const sharray& other, const Allocator& alloc);
-        constexpr sharray(sharray&& other);
-        constexpr sharray(sharray&& other, const Allocator& alloc);
+        ) {}
+        constexpr sharray(const sharray& other) {}
+        constexpr sharray(const sharray& other, const Allocator& alloc) {}
+        constexpr sharray(sharray&& other) {}
+        constexpr sharray(sharray&& other, const Allocator& alloc) {}
         constexpr sharray(
             std::initializer_list<T> init, const Allocator& alloc = Allocator()
-        );
-        constexpr ~sharray();
-        constexpr sharray& operator=(const sharray& other);
-        constexpr sharray& operator=(sharray&& other) noexcept;
-        constexpr sharray& operator=(std::initializer_list<T> ilist);
-        constexpr void assign(size_type count, const T& value);
+        ) {}
+        constexpr ~sharray() {}
+        constexpr sharray& operator=(const sharray& other) { return this; }
+        constexpr sharray& operator=(sharray&& other) noexcept { return this; }
+        constexpr sharray& operator=(std::initializer_list<T> ilist) { return this; }
+        constexpr void assign(size_type count, const T& value) {}
         template<class InputIt>
-        constexpr void assign(InputIt first, InputIt last);
-        constexpr void assign(std::initializer_list<T> ilist);
+        constexpr void assign(InputIt first, InputIt last) {}
+        constexpr void assign(std::initializer_list<T> ilist) {}
         constexpr allocator_type get_allocator() const noexcept;
         // element access
         constexpr reference at(size_type pos);
         constexpr const_reference at(size_type pos) const;
-        constexpr reference operator[](size_type pos);
-        constexpr const_reference operator[](size_type pos) const;
-        constexpr reference front();
-        constexpr const_reference front() const;
-        constexpr reference back();
-        constexpr const_reference back() const;
-        constexpr const T* data() const noexcept;
+        constexpr reference operator[](size_type pos) {
+            return _elements()[pos];
+        }
+        constexpr const_reference operator[](size_type pos) const {
+            return _elements()[pos];
+        }
+        constexpr reference front() { return _elements().front(); }
+        constexpr const_reference front() const { return _elements().front(); }
+        constexpr reference back() { return _elements().back(); }
+        constexpr const_reference back() const { return _elements().back(); }
+        constexpr const T* data() const noexcept { return _elements().data(); }
         // iterators
-        constexpr iterator begin() noexcept;
-        constexpr const_iterator begin() const noexcept;
-        constexpr const_iterator cbegin() const noexcept;
-        constexpr iterator end() noexcept;
-        constexpr const_iterator end() const noexcept;
-        constexpr const_iterator cend() const noexcept;
-        constexpr reverse_iterator rbegin() noexcept;
-        constexpr const_reverse_iterator rbegin() const noexcept;
-        constexpr const_reverse_iterator crbegin() const noexcept;
-        constexpr reverse_iterator rend() noexcept;
-        constexpr const_reverse_iterator rend() const noexcept;
-        constexpr const_reverse_iterator crend() const noexcept;
+        constexpr iterator begin() noexcept { return _elements().begin(); }
+        // constexpr const_iterator begin() const noexcept { return _elements().begin(); }
+        // constexpr const_iterator cbegin() const noexcept { return _elements().cbegin(); }
+        constexpr iterator end() noexcept { return _elements().end(); }
+        // constexpr const_iterator end() const noexcept { return _elements().end(); }
+        // constexpr const_iterator cend() const noexcept { return _elements().cend(); }
+        constexpr reverse_iterator rbegin() noexcept { return _elements().rbegin(); }
+        // constexpr const_reverse_iterator rbegin() const noexcept { return _elements().rbegin(); }
+        // constexpr const_reverse_iterator crbegin() const noexcept { return _elements().crbegin(); }
+        constexpr reverse_iterator rend() noexcept { return _elements().rend(); }
+        // constexpr const_reverse_iterator rend() const noexcept { return _elements().rend(); }
+        // constexpr const_reverse_iterator crend() const noexcept { return _elements().crend(); }
         // capacity
-        [[nodiscard]] constexpr bool empty() const noexcept;
-        constexpr size_type size() const noexcept;
+        [[nodiscard]] constexpr bool empty() const noexcept {
+            return _elements().empty();
+        }
+        constexpr size_type size() const noexcept { return _elements().size(); }
         constexpr size_type max_size() const noexcept;
-        constexpr void reserve(size_type new_cap);
+        constexpr void reserve(size_type new_cap) {}
         // pair of sizes for cap denotes elements to reserve before and after front
-        constexpr void reserve(std::pair<size_type> bidir_cap);
-        constexpr size_type capacity() const noexcept;
-        constexpr void shrink_to_fit();
+        constexpr void reserve(std::pair<size_type> bidir_cap) {}
+        constexpr size_type capacity() const noexcept { return _storage.size(); }
+        constexpr void shrink_to_fit() {}
         // modifiers
-        constexpr void clear() noexcept;
-        constexpr iterator insert(const_iterator pos, const T& value);
-        constexpr iterator insert(const_iterator pos, T&& value);
+        constexpr void clear() noexcept {}
+        constexpr iterator insert(const_iterator pos, const T& value) { return _elements().begin(); } // XXX: stub
+        constexpr iterator insert(const_iterator pos, T&& value) { return _elements().begin(); } // XXX: stub
         constexpr iterator insert(
             const_iterator pos, size_type count, const T& value
-        );
+        ) { return _elements().begin(); } // XXX: stub
         template<class InputIt>
         constexpr iterator insert(
             const_iterator pos, InputIt first, InputIt last
-        );
+        ) { return _elements().begin(); } // XXX: stub
         constexpr iterator insert(
             const_iterator pos, std::initializer_list<T> ilist
-        );
+        ) { return _elements().begin(); } // XXX: stub
         template<class... Args>
-        constexpr iterator emplace(const_iterator pos, Args&&... args);
+        constexpr iterator emplace(const_iterator pos, Args&&... args) { return _elements().begin(); } // XXX: stub
         constexpr iterator erase(const_iterator pos);
         constexpr iterator erase(const_iterator first, const_iterator last);
-        constexpr void push_back(const T& value);
-        constexpr void push_back(T&& value);
+        constexpr void push_back(const T& value) {}
+        constexpr void push_back(T&& value) {}
         template<class... Args>
         constexpr reference emplace_back(Args&&... args);
-        constexpr void pop_back();
-        constexpr void push_front(const T& value);
-        constexpr void push_front(T&& value);
+        constexpr void pop_back() {}
+        constexpr void push_front(const T& value) {}
+        constexpr void push_front(T&& value) {}
         template<class... Args>
         constexpr reference emplace_front(Args&&... args);
-        constexpr void pop_front();
-        constexpr void resize(size_type count);
-        constexpr void resize(size_type count, const value_type& value);
+        constexpr void pop_front() {}
+        constexpr void resize(size_type count) {}
+        constexpr void resize(size_type count, const value_type& value) {}
         // pair of counts is defined as number to have before the front of the array and the number to have after it
-        constexpr void resize(std::pair<size_type> count);
-        constexpr void resize(std::pair<size_type> count, const value_type& value);
-        constexpr void swap(sharray& other) noexcept;
+        constexpr void resize(std::pair<size_type> count) {}
+        constexpr void resize(std::pair<size_type> count, const value_type& value) {}
+        constexpr void swap(sharray& other) noexcept {}
         // TODO: non-member functions
     private:
         // accessors to the actual elements in the sharray, using span as a shortcut
