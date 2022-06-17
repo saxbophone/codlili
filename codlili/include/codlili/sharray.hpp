@@ -182,9 +182,9 @@ namespace com::saxbophone::codlili {
          * violates the implication that unused allocated storage is... well,
          * allocated but unused (i.e. allocated but not constructed).
          */
-        std::span<T> _storage; // heap-allocated array for storing elements in and its size, wrapped in a span
-        std::size_t _base_index; // 0-based index of first element in _storage to use
-        std::size_t _size; // number of stored items
+        std::span<T> _storage = {}; // heap-allocated array for storing elements in and its size, wrapped in a span
+        std::size_t _base_index = 0; // 0-based index of first element in _storage to use
+        std::size_t _size = 0; // number of stored items
     };
 }
 
