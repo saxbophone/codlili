@@ -17,6 +17,7 @@
 
 
 namespace com::saxbophone::codlili {
+    // TODO: rearrange the list of method prototypes to follow those of std::list
     template <typename T>  // the type of elements to store
     class list {
     public:

@@ -98,6 +98,8 @@ namespace com::saxbophone::codlili {
         constexpr size_type size() const noexcept;
         constexpr size_type max_size() const noexcept;
         constexpr void reserve(size_type new_cap);
+        // pair of sizes for cap denotes elements to reserve before and after front
+        constexpr void reserve(std::pair<size_type> bidir_cap);
         constexpr size_type capacity() const noexcept;
         constexpr void shrink_to_fit();
         // modifiers
@@ -130,6 +132,9 @@ namespace com::saxbophone::codlili {
         constexpr void pop_front();
         constexpr void resize(size_type count);
         constexpr void resize(size_type count, const value_type& value);
+        // pair of counts is defined as number to have before the front of the array and the number to have after it
+        constexpr void resize(std::pair<size_type> count);
+        constexpr void resize(std::pair<size_type> count, const value_type& value);
         constexpr void swap(sharray& other) noexcept;
         // TODO: non-member functions
     private:
