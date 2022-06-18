@@ -57,7 +57,7 @@ namespace com::saxbophone::codlili {
         constexpr explicit sharray(
             size_type count, const Allocator& alloc = Allocator()
         )
-          : sharray(count, T{}, alloc) {}
+          : sharray(count, T{}, alloc) {} // default-inserted elements of T
 
         template<class InputIt>
         constexpr sharray(
@@ -164,6 +164,7 @@ namespace com::saxbophone::codlili {
         template <typename Anything>
         constexpr bool operator==(const Anything&) const { return false; }
     private:
+        // type used for allocating storage for T (in case the Allocator passed is for a different type)
         using TAllocator = std::allocator_traits<Allocator>::template rebind_traits<T>;
         // accessors to the actual elements in the sharray, using span as a shortcut
         constexpr std::span<T> _elements() {
