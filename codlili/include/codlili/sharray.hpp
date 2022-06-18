@@ -16,6 +16,7 @@
 #include <limits>           // numeric_limits
 #include <memory>           // allocator, allocator_traits
 #include <span>             // span
+#include <stdexcept>        // logic_error
 #include <utility>          // pair
 
 
@@ -69,11 +70,17 @@ namespace com::saxbophone::codlili {
         constexpr sharray(
             InputIt first, InputIt last, const Allocator& alloc = Allocator()
         )
-          : _allocator(alloc) {}
+          : _allocator(alloc) {
+            throw std::logic_error("Not implemented");
+        }
 
-        constexpr sharray(const sharray& other) {}
+        constexpr sharray(const sharray& other) {
+            throw std::logic_error("Not implemented");
+        }
         constexpr sharray(const sharray& other, const Allocator& alloc)
-          : _allocator(alloc) {}
+          : _allocator(alloc) {
+            throw std::logic_error("Not implemented");
+        }
 
         constexpr sharray(sharray&& other)
           : _allocator(std::move(other._allocator))
@@ -87,7 +94,9 @@ namespace com::saxbophone::codlili {
         }
 
         constexpr sharray(sharray&& other, const Allocator& alloc)
-          : _allocator(alloc) {}
+          : _allocator(alloc) {
+            throw std::logic_error("Not implemented");
+        }
 
         constexpr sharray(
             std::initializer_list<T> init, const Allocator& alloc = Allocator()
@@ -112,7 +121,9 @@ namespace com::saxbophone::codlili {
             TAllocator::deallocate(_allocator, _storage.data(), _storage.size());
         }
 
-        constexpr sharray& operator=(const sharray& other) { return *this; }
+        constexpr sharray& operator=(const sharray& other) {
+            throw std::logic_error("Not implemented");
+        }
         constexpr sharray& operator=(sharray&& other) noexcept {
             // TODO: implement proper handling of allocator according to deque:
             /*
@@ -147,15 +158,27 @@ namespace com::saxbophone::codlili {
             other._size = 0;
             return *this;
         }
-        constexpr sharray& operator=(std::initializer_list<T> ilist) { return *this; }
-        constexpr void assign(size_type count, const T& value) {}
+        constexpr sharray& operator=(std::initializer_list<T> ilist) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void assign(size_type count, const T& value) {
+            throw std::logic_error("Not implemented");
+        }
         template<class InputIt>
-        constexpr void assign(InputIt first, InputIt last) {}
-        constexpr void assign(std::initializer_list<T> ilist) {}
+        constexpr void assign(InputIt first, InputIt last) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void assign(std::initializer_list<T> ilist) {
+            throw std::logic_error("Not implemented");
+        }
         constexpr allocator_type get_allocator() const noexcept { return _allocator; }
         // element access
-        constexpr reference at(size_type pos);
-        constexpr const_reference at(size_type pos) const;
+        constexpr reference at(size_type pos) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr const_reference at(size_type pos) const {
+            throw std::logic_error("Not implemented");
+        }
         constexpr reference operator[](size_type pos) {
             return _elements()[pos];
         }
@@ -191,48 +214,94 @@ namespace com::saxbophone::codlili {
         constexpr void reserve(size_type new_cap) {
             if (new_cap < _storage.size()) { return; } // no-op
             // ... rest of code ...
+            throw std::logic_error("Not implemented");
         }
         // pair of sizes for cap denotes elements to reserve before and after front
         constexpr void reserve(std::pair<size_type, size_type> bidir_cap) {
             size_type new_size = bidir_cap.first + bidir_cap.second;
             if (new_size < _storage.size()) { return; } // no-op
             // ... rest of code ...
+            throw std::logic_error("Not implemented");
         }
         constexpr size_type capacity() const noexcept { return _storage.size(); }
-        constexpr void shrink_to_fit() {}
+        constexpr void shrink_to_fit() {
+            throw std::logic_error("Not implemented");
+        }
         // modifiers
         constexpr void clear() noexcept {}
-        constexpr iterator insert(const_iterator pos, const T& value) { return _elements().begin(); } // XXX: stub
-        constexpr iterator insert(const_iterator pos, T&& value) { return _elements().begin(); } // XXX: stub
+        constexpr iterator insert(const_iterator pos, const T& value) {
+            throw std::logic_error("Not implemented"); // XXX: stub
+        }
+        constexpr iterator insert(const_iterator pos, T&& value) {
+            throw std::logic_error("Not implemented"); // XXX: stub
+        }
         constexpr iterator insert(
             const_iterator pos, size_type count, const T& value
-        ) { return _elements().begin(); } // XXX: stub
+        ) {
+            throw std::logic_error("Not implemented"); // XXX: stub
+        }
         template<class InputIt>
         constexpr iterator insert(
             const_iterator pos, InputIt first, InputIt last
-        ) { return _elements().begin(); } // XXX: stub
+        ) {
+            throw std::logic_error("Not implemented"); // XXX: stub
+        }
         constexpr iterator insert(
             const_iterator pos, std::initializer_list<T> ilist
-        ) { return _elements().begin(); } // XXX: stub
+        ) {
+            throw std::logic_error("Not implemented"); // XXX: stub
+        }
         template<class... Args>
-        constexpr iterator emplace(const_iterator pos, Args&&... args) { return _elements().begin(); } // XXX: stub
-        constexpr iterator erase(const_iterator pos);
-        constexpr iterator erase(const_iterator first, const_iterator last);
-        constexpr void push_back(const T& value) {}
-        constexpr void push_back(T&& value) {}
+        constexpr iterator emplace(const_iterator pos, Args&&... args) {
+            throw std::logic_error("Not implemented"); // XXX: stub
+        }
+        constexpr iterator erase(const_iterator pos) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr iterator erase(const_iterator first, const_iterator last) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void push_back(const T& value) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void push_back(T&& value) {
+            throw std::logic_error("Not implemented");
+        }
         template<class... Args>
-        constexpr reference emplace_back(Args&&... args);
-        constexpr void pop_back() {}
-        constexpr void push_front(const T& value) {}
-        constexpr void push_front(T&& value) {}
+        constexpr reference emplace_back(Args&&... args) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void pop_back() {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void push_front(const T& value) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void push_front(T&& value) {
+            throw std::logic_error("Not implemented");
+        }
         template<class... Args>
-        constexpr reference emplace_front(Args&&... args);
-        constexpr void pop_front() {}
-        constexpr void resize(size_type count) {}
-        constexpr void resize(size_type count, const value_type& value) {}
+        constexpr reference emplace_front(Args&&... args) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void pop_front() {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void resize(size_type count) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void resize(size_type count, const value_type& value) {
+            throw std::logic_error("Not implemented");
+        }
         // pair of counts is defined as number to have before the front of the array and the number to have after it
-        constexpr void resize(std::pair<size_type, size_type> count) {}
-        constexpr void resize(std::pair<size_type, size_type> count, const value_type& value) {}
+        constexpr void resize(std::pair<size_type, size_type> count) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr void resize(
+            std::pair<size_type, size_type> count, const value_type& value
+        ) {
+            throw std::logic_error("Not implemented");
+        }
         constexpr void swap(sharray& other) noexcept {
             if constexpr (TAllocator::propagate_on_container_swap::value) {
                 std::swap(_allocator, other._allocator);
