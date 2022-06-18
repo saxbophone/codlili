@@ -82,6 +82,7 @@ namespace com::saxbophone::codlili {
           , _size(other._size)
           {
             other._storage = {};
+            other._base_index = 0;
             other._size = 0;
         }
 
