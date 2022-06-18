@@ -125,9 +125,22 @@ namespace com::saxbophone::codlili {
              * In any case, all elements originally belong to *this are either
              * destroyed or replaced by element-wise move-assignment.
              */
-            _allocator = other._allocator;
-            _storage = std::move(other._storage);
-            other._storage = {};
+            if constexpr (TAllocator::propagate_on_container_move_assignment::value) {
+                // the allocator of *this is replaced by a copy of that of other
+                _allocator = other._allocator;
+            }
+            if (_allocator != other._allocator) {
+                /*
+                 * If the allocators of *this and other do not compare equal,
+                 * *this cannot take ownership of the memory owned by other and
+                 * must move-assign each element individually
+                 */
+                // TODO: implement assignment in this case
+            } else {
+                // otherwise, we move-assign the elements of other
+                _storage = std::move(other._storage);
+                other._storage = {};
+            }
             _base_index = other._base_index;
             other._base_index = 0;
             _size = other._size;
