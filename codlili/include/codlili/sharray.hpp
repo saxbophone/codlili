@@ -282,7 +282,7 @@ namespace com::saxbophone::codlili {
         constexpr void push_back(const T& value) {
             if (_base_index + _size == _storage.size()) {
                 // double the length of both ends
-                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index) * 2});
+                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
             }
             TAllocator::construct(
                 _allocator,
@@ -294,7 +294,7 @@ namespace com::saxbophone::codlili {
         constexpr void push_back(T&& value) {
             if (_base_index + _size == _storage.size()) {
                 // double the length of both ends
-                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index) * 2});
+                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
             }
             TAllocator::construct(
                 _allocator,
@@ -318,7 +318,7 @@ namespace com::saxbophone::codlili {
         constexpr void push_front(const T& value) {
             if (_base_index + _size == _storage.size()) {
                 // double the length of both ends
-                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index) * 2});
+                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
             }
             TAllocator::construct(
                 _allocator,
@@ -331,7 +331,7 @@ namespace com::saxbophone::codlili {
         constexpr void push_front(T&& value) {
             if (_base_index + _size == _storage.size()) {
                 // double the length of both ends
-                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index) * 2});
+                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
             }
             TAllocator::construct(
                 _allocator,
