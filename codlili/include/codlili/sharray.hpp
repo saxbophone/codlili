@@ -40,31 +40,44 @@ namespace com::saxbophone::codlili {
         using iterator = std::span<T>::iterator;
         using const_iterator = std::span<const T>::iterator;
         using reverse_iterator = std::span<T>::reverse_iterator;
-        using const_reverse_iterator = std::span<const T>::reverse_iterator; // NB: not defined in the standard?
+        using const_reverse_iterator = std::span<const T>::reverse_iterator;
         // member functions
         constexpr sharray() {}
-        constexpr explicit sharray(const Allocator& alloc) {}
+        constexpr explicit sharray(const Allocator& alloc) : _allocator(alloc) {}
+
         constexpr sharray(
             size_type count,
             const T& value = T(),
             const Allocator& alloc = Allocator()
         )
           : _allocator(alloc)
-          , _storage(TAllocator::allocate(_allocator, count), count) {}
+          , _storage(TAllocator::allocate(_allocator, count), count)
+          {}
+
         constexpr explicit sharray(
             size_type count, const Allocator& alloc = Allocator()
-        ) {}
+        )
+          : sharray(count, T{}, alloc) {}
+
         template<class InputIt>
         constexpr sharray(
             InputIt first, InputIt last, const Allocator& alloc = Allocator()
-        ) {}
+        )
+          : _allocator(alloc) {}
+
         constexpr sharray(const sharray& other) {}
-        constexpr sharray(const sharray& other, const Allocator& alloc) {}
+        constexpr sharray(const sharray& other, const Allocator& alloc)
+          : _allocator(alloc) {}
+
         constexpr sharray(sharray&& other) {}
-        constexpr sharray(sharray&& other, const Allocator& alloc) {}
+        constexpr sharray(sharray&& other, const Allocator& alloc)
+          : _allocator(alloc) {}
+
         constexpr sharray(
             std::initializer_list<T> init, const Allocator& alloc = Allocator()
-        ) {}
+        )
+          : _allocator(alloc) {}
+
         constexpr ~sharray() {}
         constexpr sharray& operator=(const sharray& other) { return *this; }
         constexpr sharray& operator=(sharray&& other) noexcept { return *this; }
@@ -73,7 +86,7 @@ namespace com::saxbophone::codlili {
         template<class InputIt>
         constexpr void assign(InputIt first, InputIt last) {}
         constexpr void assign(std::initializer_list<T> ilist) {}
-        constexpr allocator_type get_allocator() const noexcept;
+        constexpr allocator_type get_allocator() const noexcept { return _allocator; }
         // element access
         constexpr reference at(size_type pos);
         constexpr const_reference at(size_type pos) const;
