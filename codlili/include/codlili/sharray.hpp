@@ -52,12 +52,17 @@ namespace com::saxbophone::codlili {
         )
           : _allocator(alloc)
           , _storage(TAllocator::allocate(_allocator, count), count)
-          {}
+          , _size(count)
+          {
+            for (size_type i = 0; i < _size; i++) {
+                TAllocator::construct(_allocator, _storage.data() + i, value);
+            }
+        }
 
         constexpr explicit sharray(
             size_type count, const Allocator& alloc = Allocator()
         )
-          : sharray(count, T{}, alloc) {} // default-inserted elements of T
+          : sharray(count, T(), alloc) {} // default-inserted elements of T
 
         template<class InputIt>
         constexpr sharray(
@@ -76,9 +81,26 @@ namespace com::saxbophone::codlili {
         constexpr sharray(
             std::initializer_list<T> init, const Allocator& alloc = Allocator()
         )
-          : _allocator(alloc) {}
+          : _allocator(alloc)
+          , _storage(TAllocator::allocate(_allocator, init.size()), init.size())
+          , _size(init.size())
+          {
+            auto it = init.begin();
+            for (size_type i = 0; i < _size; i++) {
+                TAllocator::construct(_allocator, _storage.data() + i, *it);
+                it++;
+            }
+        }
 
-        constexpr ~sharray() {}
+        constexpr ~sharray() {
+            // destroy any constructed objects first
+            for (size_type i = _base_index; i < _storage.size(); i++) {
+                TAllocator::destroy(_allocator, _storage.data() + i);
+            }
+            // then deallocate all memory
+            TAllocator::deallocate(_allocator, _storage.data(), _storage.size());
+        }
+
         constexpr sharray& operator=(const sharray& other) { return *this; }
         constexpr sharray& operator=(sharray&& other) noexcept { return *this; }
         constexpr sharray& operator=(std::initializer_list<T> ilist) { return *this; }
@@ -159,10 +181,14 @@ namespace com::saxbophone::codlili {
         constexpr void resize(std::pair<size_type, size_type> count) {}
         constexpr void resize(std::pair<size_type, size_type> count, const value_type& value) {}
         constexpr void swap(sharray& other) noexcept {}
-        // TODO: non-member functions
-        // XXX: dirty stub just to get code to compile
-        template <typename Anything>
-        constexpr bool operator==(const Anything&) const { return false; }
+        // comparison
+        constexpr bool operator==(const sharray& other) const {
+            if (_size != other._size) { return false; }
+            for (size_type i = 0; i < _size; i++) {
+                if ((*this)[i] != other[i]) { return false; }
+            }
+            return true;
+        }
     private:
         // type used for allocating storage for T (in case the Allocator passed is for a different type)
         using TAllocator = std::allocator_traits<Allocator>::template rebind_traits<T>;
