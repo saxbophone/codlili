@@ -75,7 +75,16 @@ namespace com::saxbophone::codlili {
         constexpr sharray(const sharray& other, const Allocator& alloc)
           : _allocator(alloc) {}
 
-        constexpr sharray(sharray&& other) {}
+        constexpr sharray(sharray&& other)
+          : _allocator(std::move(other._allocator))
+          , _storage(std::move(other._storage))
+          , _base_index(other._base_index)
+          , _size(other._size)
+          {
+            other._storage = {};
+            other._size = 0;
+        }
+
         constexpr sharray(sharray&& other, const Allocator& alloc)
           : _allocator(alloc) {}
 
@@ -95,7 +104,7 @@ namespace com::saxbophone::codlili {
 
         constexpr ~sharray() {
             // destroy any constructed objects first
-            for (size_type i = _base_index; i < _storage.size(); i++) {
+            for (size_type i = _base_index; i < _base_index + _size; i++) {
                 TAllocator::destroy(_allocator, _storage.data() + i);
             }
             // then deallocate all memory
