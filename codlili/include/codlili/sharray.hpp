@@ -44,13 +44,9 @@ namespace com::saxbophone::codlili {
         using reverse_iterator = std::span<T>::reverse_iterator;
         using const_reverse_iterator = std::span<const T>::reverse_iterator;
         // member functions
-        constexpr sharray() noexcept(noexcept(Allocator())) {
-            throw std::logic_error("Not implemented");
-        }
+        constexpr sharray() noexcept(noexcept(Allocator())) {}
         constexpr explicit sharray(const Allocator& alloc) noexcept
-          : _allocator(alloc) {
-            throw std::logic_error("Not implemented");
-        }
+          : _allocator(alloc) {}
 
         constexpr sharray(
             size_type count,
@@ -76,7 +72,9 @@ namespace com::saxbophone::codlili {
             InputIt first, InputIt last, const Allocator& alloc = Allocator()
         )
           : _allocator(alloc) {
-            throw std::logic_error("Not implemented");
+            for (; first != last; first++) {
+                push_back(*first);
+            }
         }
 
         constexpr sharray(const sharray& other) {
@@ -240,8 +238,10 @@ namespace com::saxbophone::codlili {
                 // destroy old object
                 TAllocator::destroy(_allocator, _storage.data() + i);
             }
-            // deallocate old storage
-            TAllocator::deallocate(_allocator, _storage.data(), _storage.size());
+            if (_storage.size() != 0) {
+                // deallocate old storage
+                TAllocator::deallocate(_allocator, _storage.data(), _storage.size());
+            }
             // assign new storage
             _storage = {new_storage, new_size};
             // fix up new indices
