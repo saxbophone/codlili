@@ -13,6 +13,7 @@
 #include <cstddef>          // size_t
 
 #include <initializer_list> // initializer_list
+#include <limits>           // numeric_limits
 #include <memory>           // allocator, allocator_traits
 #include <span>             // span
 #include <utility>          // pair
@@ -141,7 +142,9 @@ namespace com::saxbophone::codlili {
             return _elements().empty();
         }
         constexpr size_type size() const noexcept { return _elements().size(); }
-        constexpr size_type max_size() const noexcept;
+        constexpr size_type max_size() const noexcept {
+            return std::numeric_limits<difference_type>::max();
+        }
         constexpr void reserve(size_type new_cap) {}
         // pair of sizes for cap denotes elements to reserve before and after front
         constexpr void reserve(std::pair<size_type, size_type> bidir_cap) {}
