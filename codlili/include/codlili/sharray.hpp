@@ -113,7 +113,10 @@ namespace com::saxbophone::codlili {
         }
 
         constexpr sharray& operator=(const sharray& other) { return *this; }
-        constexpr sharray& operator=(sharray&& other) noexcept { return *this; }
+        constexpr sharray& operator=(sharray&& other) noexcept {
+            // TODO: implement this to get std::swap(sharray, sharray) to work
+            return *this;
+        }
         constexpr sharray& operator=(std::initializer_list<T> ilist) { return *this; }
         constexpr void assign(size_type count, const T& value) {}
         template<class InputIt>
