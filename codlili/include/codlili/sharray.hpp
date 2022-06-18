@@ -44,8 +44,13 @@ namespace com::saxbophone::codlili {
         using reverse_iterator = std::span<T>::reverse_iterator;
         using const_reverse_iterator = std::span<const T>::reverse_iterator;
         // member functions
-        constexpr sharray() noexcept(noexcept(Allocator())) {}
-        constexpr explicit sharray(const Allocator& alloc) noexcept : _allocator(alloc) {}
+        constexpr sharray() noexcept(noexcept(Allocator())) {
+            throw std::logic_error("Not implemented");
+        }
+        constexpr explicit sharray(const Allocator& alloc) noexcept
+          : _allocator(alloc) {
+            throw std::logic_error("Not implemented");
+        }
 
         constexpr sharray(
             size_type count,
