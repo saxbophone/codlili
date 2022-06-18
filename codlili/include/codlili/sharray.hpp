@@ -48,7 +48,9 @@ namespace com::saxbophone::codlili {
             size_type count,
             const T& value = T(),
             const Allocator& alloc = Allocator()
-        ) {}
+        )
+          : _allocator(alloc)
+          , _storage(TAllocator::allocate(_allocator, count), count) {}
         constexpr explicit sharray(
             size_type count, const Allocator& alloc = Allocator()
         ) {}
@@ -149,6 +151,7 @@ namespace com::saxbophone::codlili {
         template <typename Anything>
         constexpr bool operator==(const Anything&) const { return false; }
     private:
+        using TAllocator = std::allocator_traits<Allocator>::template rebind_traits<T>;
         // accessors to the actual elements in the sharray, using span as a shortcut
         constexpr std::span<T> _elements() {
             return _storage.subspan(_base_index, _size);
@@ -156,6 +159,7 @@ namespace com::saxbophone::codlili {
         constexpr std::span<const T> _elements() const {
             return _storage.subspan(_base_index, _size);
         }
+        allocator_type _allocator = Allocator();
         /*
          * NOTES:
          * - _storage_size can be greater than _size
