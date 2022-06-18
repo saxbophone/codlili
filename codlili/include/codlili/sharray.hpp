@@ -114,7 +114,24 @@ namespace com::saxbophone::codlili {
 
         constexpr sharray& operator=(const sharray& other) { return *this; }
         constexpr sharray& operator=(sharray&& other) noexcept {
-            // TODO: implement this to get std::swap(sharray, sharray) to work
+            // TODO: implement proper handling of allocator according to deque:
+            /*
+             * If std::allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
+             * is true, the allocator of *this is replaced by a copy of that of
+             * other. If it is false and the allocators of *this and other do
+             * not compare equal, *this cannot take ownership of the memory
+             * owned by other and must move-assign each element individually,
+             * allocating additional memory using its own allocator as needed.
+             * In any case, all elements originally belong to *this are either
+             * destroyed or replaced by element-wise move-assignment.
+             */
+            _allocator = other._allocator;
+            _storage = std::move(other._storage);
+            other._storage = {};
+            _base_index = other._base_index;
+            other._base_index = 0;
+            _size = other._size;
+            other._size = 0;
             return *this;
         }
         constexpr sharray& operator=(std::initializer_list<T> ilist) { return *this; }
