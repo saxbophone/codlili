@@ -218,15 +218,33 @@ namespace com::saxbophone::codlili {
         }
         // pair of sizes for cap denotes elements to reserve before and after front
         constexpr void reserve(std::pair<size_type, size_type> bidir_cap) {
-            size_type new_size = bidir_cap.first + bidir_cap.second;
+            auto [front, back] = bidir_cap;
+            size_type new_size = front + back;
             if (new_size < _storage.size()) { return; } // no-op
-            // ... rest of code ...
-            throw std::logic_error("Not implemented");
+            if (front < _capacity_behind()) { return; } // no-op
+            if (back < _capacity_ahead()) { return; } // no-op
+            // allocate new storage
+            auto new_storage = TAllocator::allocate(_allocator, new_size);
+            // move elements from old
+            for (size_type i = 0; i < _size; i++) {
+                TAllocator::construct(
+                    _allocator,
+                    new_storage + front + i,
+                    std::move(_elements()[i])
+                );
+                // destroy old object
+                TAllocator::destroy(_allocator, _storage.data() + i);
+            }
+            // deallocate old storage
+            TAllocator::deallocate(_allocator, _storage.data(), _storage.size());
+            // assign new storage
+            _storage = {new_storage, new_size};
+            // fix up new indices
+            _base_index = front;
+            _size = back;
         }
         constexpr size_type capacity() const noexcept { return _storage.size(); }
-        constexpr void shrink_to_fit() {
-            throw std::logic_error("Not implemented");
-        }
+        constexpr void shrink_to_fit() { /* No implementation required */ }
         // modifiers
         constexpr void clear() noexcept {}
         constexpr iterator insert(const_iterator pos, const T& value) {
@@ -262,33 +280,88 @@ namespace com::saxbophone::codlili {
             throw std::logic_error("Not implemented");
         }
         constexpr void push_back(const T& value) {
-            throw std::logic_error("Not implemented");
+            if (_base_index + _size == _storage.size()) {
+                // double the length of both ends
+                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index) * 2});
+            }
+            TAllocator::construct(
+                _allocator,
+                _storage.data() + _base_index + _size,
+                value
+            );
+            _size++;
         }
         constexpr void push_back(T&& value) {
-            throw std::logic_error("Not implemented");
+            if (_base_index + _size == _storage.size()) {
+                // double the length of both ends
+                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index) * 2});
+            }
+            TAllocator::construct(
+                _allocator,
+                _storage.data() + _base_index + _size,
+                value
+            );
+            _size++;
         }
         template<class... Args>
         constexpr reference emplace_back(Args&&... args) {
             throw std::logic_error("Not implemented");
         }
         constexpr void pop_back() {
-            throw std::logic_error("Not implemented");
+            TAllocator::destroy(_allocator, _storage.data() + _base_index + _size - 1);
+            _size--;
+            // _base_index is reset to halfway if now empty
+            if (_size != 0) {
+                _base_index = _storage.size() / 2;
+            }
         }
         constexpr void push_front(const T& value) {
-            throw std::logic_error("Not implemented");
+            if (_base_index + _size == _storage.size()) {
+                // double the length of both ends
+                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index) * 2});
+            }
+            TAllocator::construct(
+                _allocator,
+                _storage.data() + _base_index - 1,
+                value
+            );
+            _size++;
+            _base_index--;
         }
         constexpr void push_front(T&& value) {
-            throw std::logic_error("Not implemented");
+            if (_base_index + _size == _storage.size()) {
+                // double the length of both ends
+                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index) * 2});
+            }
+            TAllocator::construct(
+                _allocator,
+                _storage.data() + _base_index - 1,
+                value
+            );
+            _size++;
+            _base_index--;
         }
         template<class... Args>
         constexpr reference emplace_front(Args&&... args) {
             throw std::logic_error("Not implemented");
         }
         constexpr void pop_front() {
-            throw std::logic_error("Not implemented");
+            TAllocator::destroy(_allocator, _storage.data() + _base_index);
+            _size--;
+            // _base_index goes up one if not empty, otherwise reset to halfway
+            if (_size != 0) {
+                _base_index++;
+            } else {
+                _base_index = _storage.size() / 2;
+            }
         }
         constexpr void resize(size_type count) {
-            throw std::logic_error("Not implemented");
+            while (count < _size) {
+                pop_back();
+            }
+            while (count > _size) {
+                push_back(T());
+            }
         }
         constexpr void resize(size_type count, const value_type& value) {
             throw std::logic_error("Not implemented");
@@ -328,6 +401,15 @@ namespace com::saxbophone::codlili {
         constexpr std::span<const T> _elements() const {
             return _storage.subspan(_base_index, _size);
         }
+        // how much space is allocated before .front() ?
+        constexpr size_type _capacity_behind() const {
+            return _base_index;
+        }
+        // how much space is allocated after .front() ?
+        constexpr size_type _capacity_ahead() const {
+            return _storage.size() - _base_index;
+        }
+
         allocator_type _allocator = Allocator();
         /*
          * NOTES:
