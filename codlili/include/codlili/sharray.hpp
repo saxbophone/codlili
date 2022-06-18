@@ -145,9 +145,16 @@ namespace com::saxbophone::codlili {
         constexpr size_type max_size() const noexcept {
             return std::numeric_limits<difference_type>::max();
         }
-        constexpr void reserve(size_type new_cap) {}
+        constexpr void reserve(size_type new_cap) {
+            if (new_cap < _storage.size()) { return; } // no-op
+            // ... rest of code ...
+        }
         // pair of sizes for cap denotes elements to reserve before and after front
-        constexpr void reserve(std::pair<size_type, size_type> bidir_cap) {}
+        constexpr void reserve(std::pair<size_type, size_type> bidir_cap) {
+            size_type new_size = bidir_cap.first + bidir_cap.second;
+            if (new_size < _storage.size()) { return; } // no-op
+            // ... rest of code ...
+        }
         constexpr size_type capacity() const noexcept { return _storage.size(); }
         constexpr void shrink_to_fit() {}
         // modifiers
@@ -183,7 +190,14 @@ namespace com::saxbophone::codlili {
         // pair of counts is defined as number to have before the front of the array and the number to have after it
         constexpr void resize(std::pair<size_type, size_type> count) {}
         constexpr void resize(std::pair<size_type, size_type> count, const value_type& value) {}
-        constexpr void swap(sharray& other) noexcept {}
+        constexpr void swap(sharray& other) noexcept {
+            if constexpr (TAllocator::propagate_on_container_swap::value) {
+                std::swap(_allocator, other._allocator);
+            }
+            std::swap(_storage, other._storage);
+            std::swap(_base_index, other._base_index);
+            std::swap(_size, other._size);
+        }
         // comparison
         constexpr bool operator==(const sharray& other) const {
             if (_size != other._size) { return false; }
