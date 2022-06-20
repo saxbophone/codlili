@@ -229,12 +229,21 @@ TEST_CASE("sharray mirrors the API of vector and deque") {
         }
     }
     SECTION(".pop_front()") {
-
         sharray<int> array = {1, 2, 3, 4};
 
         array.pop_front();
 
         CHECK(array.size() == 3);
         CHECK(array == sharray<int>({2, 3, 4}));
+    }
+    SECTION(".resize()") {
+        std::size_t size = (std::size_t)GENERATE(0, 10, 20, 300, 4000, 50000);
+        sharray<int> array(size);
+        std::size_t resize_to = (std::size_t)GENERATE(0, 10, 20, 300, 4000, 50000);
+
+        array.resize(resize_to);
+
+        CHECK(array.size() == resize_to);
+        CHECK(array == sharray<int>(resize_to));
     }
 }
