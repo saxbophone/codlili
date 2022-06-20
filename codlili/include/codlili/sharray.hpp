@@ -77,9 +77,20 @@ namespace com::saxbophone::codlili {
             }
         }
 
-        constexpr sharray(const sharray& other) {
-            throw std::logic_error("Not implemented");
+        constexpr sharray(const sharray& other)
+          : _allocator(
+                std::allocator_traits<Allocator>::select_on_container_copy_construction(
+                    other.get_allocator()
+                )
+            )
+          , _storage(TAllocator::allocate(_allocator, other.size()), other.size())
+          , _size(other.size())
+          {
+            for (std::size_t i = 0; i < _size; i++) {
+                TAllocator::construct(_allocator, _storage.data() + i, other[i]);
+            }
         }
+
         constexpr sharray(const sharray& other, const Allocator& alloc)
           : _allocator(alloc) {
             throw std::logic_error("Not implemented");
