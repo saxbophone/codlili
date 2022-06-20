@@ -184,4 +184,57 @@ TEST_CASE("sharray mirrors the API of vector and deque") {
         // as per the standard, .clear() must not change capacity (for vector)
         CHECK(array.capacity() == old_capacity);
     }
+    SECTION(".push_back()") {
+        sharray<int> array = {97, 31};
+
+        SECTION("lvalue") {
+            int v = 42;
+
+            array.push_back(v);
+
+            CHECK(array.size() == 3);
+            CHECK(array == sharray<int>({97, 31, 42}));
+        }
+        SECTION("rvalue") {
+            array.push_back(42);
+
+            CHECK(array.size() == 3);
+            CHECK(array == sharray<int>({97, 31, 42}));
+        }
+    }
+    SECTION(".pop_back()") {
+        sharray<int> array = {1, 2, 3, 4};
+
+        array.pop_back();
+
+        CHECK(array.size() == 3);
+        CHECK(array == sharray<int>({1, 2, 3}));
+    }
+    SECTION(".push_front()") {
+        sharray<int> array = {97, 31};
+
+        SECTION("lvalue") {
+            int v = 42;
+
+            array.push_front(v);
+
+            CHECK(array.size() == 3);
+            CHECK(array == sharray<int>({42, 97, 31}));
+        }
+        SECTION("rvalue") {
+            array.push_front(42);
+
+            CHECK(array.size() == 3);
+            CHECK(array == sharray<int>({42, 97, 31}));
+        }
+    }
+    SECTION(".pop_front()") {
+
+        sharray<int> array = {1, 2, 3, 4};
+
+        array.pop_front();
+
+        CHECK(array.size() == 3);
+        CHECK(array == sharray<int>({2, 3, 4}));
+    }
 }
