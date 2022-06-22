@@ -54,7 +54,7 @@ namespace com::saxbophone::codlili {
             const Allocator& alloc = Allocator()
         )
           : _allocator(alloc)
-          , _storage{TAllocator::allocate(_allocator, count), count}
+          , _storage{count != 0 ? TAllocator::allocate(_allocator, count) : nullptr, count}
           , _size(count)
           {
             for (size_type i = 0; i < _size; i++) {
@@ -83,7 +83,7 @@ namespace com::saxbophone::codlili {
                     other.get_allocator()
                 )
             )
-          , _storage{TAllocator::allocate(_allocator, other.size()), other.size()}
+          , _storage{other.size() != 0 ? TAllocator::allocate(_allocator, other.size()) : nullptr, other.size()}
           , _size(other.size())
           {
             for (std::size_t i = 0; i < _size; i++) {
@@ -116,7 +116,7 @@ namespace com::saxbophone::codlili {
             std::initializer_list<T> init, const Allocator& alloc = Allocator()
         )
           : _allocator(alloc)
-          , _storage{TAllocator::allocate(_allocator, init.size()), init.size()}
+          , _storage{init.size() != 0 ? TAllocator::allocate(_allocator, init.size()) : nullptr, init.size()}
           , _size(init.size())
           {
             auto it = init.begin();
@@ -127,7 +127,7 @@ namespace com::saxbophone::codlili {
         }
 
         constexpr ~sharray() {
-            if (_storage.size == 0) { return; }
+            if (_storage.data == nullptr) { return; }
             // destroy any constructed objects first
             for (size_type i = _base_index; i < _base_index + _size; i++) {
                 TAllocator::destroy(_allocator, _storage.data + i);
@@ -246,40 +246,15 @@ namespace com::saxbophone::codlili {
                 TAllocator::destroy(_allocator, _storage.data + i);
             }
             // swap new storage with old
-            std::swap(new_storage.data, _storage.data);
-            // swap sizes
-            std::swap(new_storage.size, _storage.size);
-            // deallocate old storage
-            TAllocator::deallocate(_allocator, new_storage.data, new_storage.size);
+            std::swap(new_storage, _storage);
+            // deallocate old storage if non-empty
+            if (new_storage.data != nullptr) {
+                TAllocator::deallocate(_allocator, new_storage.data, new_storage.size);
+            }
         }
         // pair of sizes for cap denotes elements to reserve before and after front
         constexpr void reserve(std::pair<size_type, size_type> bidir_cap) {
-            auto [front, back] = bidir_cap;
-            size_type new_size = front + back;
-            if (new_size < _storage.size) { return; } // no-op
-            if (front < _capacity_behind()) { return; } // no-op
-            if (back < _capacity_ahead()) { return; } // no-op
-            // allocate new storage
-            auto new_storage = TAllocator::allocate(_allocator, new_size);
-            // move elements from old
-            for (size_type i = 0; i < _size; i++) {
-                TAllocator::construct(
-                    _allocator,
-                    new_storage + front + i,
-                    std::move(_elements()[i])
-                );
-                // destroy old object
-                TAllocator::destroy(_allocator, _storage.data + i);
-            }
-            if (_storage.size != 0) {
-                // deallocate old storage
-                TAllocator::deallocate(_allocator, _storage.data, _storage.size);
-            }
-            // assign new storage
-            _storage = {new_storage, new_size};
-            // fix up new indices
-            _base_index = front;
-            _size = back;
+            throw std::logic_error("Not implemented"); // XXX: stub
         }
         constexpr size_type capacity() const noexcept { return _storage.size; }
         constexpr void shrink_to_fit() { /* No implementation required */ }
@@ -350,30 +325,26 @@ namespace com::saxbophone::codlili {
             }
         }
         constexpr void push_front(const T& value) {
-            // if (_base_index + _size == _storage.size()) {
-            //     // double the length of both ends
-            //     reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
-            // }
-            // TAllocator::construct(
-            //     _allocator,
-            //     _storage.data() + _base_index - 1,
-            //     value
-            // );
-            // _size++;
-            // _base_index--;
+            // make sure there's enough space in back for 1 additional element
+            _grow_front(1);
+            TAllocator::construct(
+                _allocator,
+                _storage.data + _base_index - 1,
+                value
+            );
+            _size++;
+            _base_index--;
         }
         constexpr void push_front(T&& value) {
-            // if (_base_index + _size == _storage.size()) {
-            //     // double the length of both ends
-            //     reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
-            // }
-            // TAllocator::construct(
-            //     _allocator,
-            //     _storage.data() + _base_index - 1,
-            //     value
-            // );
-            // _size++;
-            // _base_index--;
+            // make sure there's enough space in back for 1 additional element
+            _grow_front(1);
+            TAllocator::construct(
+                _allocator,
+                _storage.data + _base_index - 1,
+                value
+            );
+            _size++;
+            _base_index--;
         }
         template<class... Args>
         constexpr reference emplace_front(Args&&... args) {
@@ -390,12 +361,12 @@ namespace com::saxbophone::codlili {
             }
         }
         constexpr void resize(size_type count) {
-            // while (count < _size) {
-            //     pop_back();
-            // }
-            // while (count > _size) {
-            //     push_back(T());
-            // }
+            while (count < _size) {
+                pop_back();
+            }
+            while (count > _size) {
+                push_back(T());
+            }
         }
         constexpr void resize(size_type count, const value_type& value) {
             throw std::logic_error("Not implemented");
@@ -445,7 +416,9 @@ namespace com::saxbophone::codlili {
         }
         // conditional reallocators for front and back insertions
         constexpr void _grow_front(size_type extra_space) {
-            if (extra_space > _capacity_behind()) {}
+            if (extra_space > _capacity_behind()) {
+                reserve((_size + extra_space) * 3);
+            }
         }
         constexpr void _grow_back(size_type extra_space) {
             if (extra_space > _capacity_ahead()) {
