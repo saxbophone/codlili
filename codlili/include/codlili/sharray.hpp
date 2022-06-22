@@ -54,11 +54,11 @@ namespace com::saxbophone::codlili {
             const Allocator& alloc = Allocator()
         )
           : _allocator(alloc)
-          , _storage(TAllocator::allocate(_allocator, count), count)
+          , _storage{TAllocator::allocate(_allocator, count), count}
           , _size(count)
           {
             for (size_type i = 0; i < _size; i++) {
-                TAllocator::construct(_allocator, _storage.data() + i, value);
+                TAllocator::construct(_allocator, _storage.data + i, value);
             }
         }
 
@@ -83,11 +83,11 @@ namespace com::saxbophone::codlili {
                     other.get_allocator()
                 )
             )
-          , _storage(TAllocator::allocate(_allocator, other.size()), other.size())
+          , _storage{TAllocator::allocate(_allocator, other.size()), other.size()}
           , _size(other.size())
           {
             for (std::size_t i = 0; i < _size; i++) {
-                TAllocator::construct(_allocator, _storage.data() + i, other[i]);
+                TAllocator::construct(_allocator, _storage.data + i, other[i]);
             }
         }
 
@@ -116,23 +116,24 @@ namespace com::saxbophone::codlili {
             std::initializer_list<T> init, const Allocator& alloc = Allocator()
         )
           : _allocator(alloc)
-          , _storage(TAllocator::allocate(_allocator, init.size()), init.size())
+          , _storage{TAllocator::allocate(_allocator, init.size()), init.size()}
           , _size(init.size())
           {
             auto it = init.begin();
             for (size_type i = 0; i < _size; i++) {
-                TAllocator::construct(_allocator, _storage.data() + i, *it);
+                TAllocator::construct(_allocator, _storage.data + i, *it);
                 it++;
             }
         }
 
         constexpr ~sharray() {
+            if (_storage.size == 0) { return; }
             // destroy any constructed objects first
             for (size_type i = _base_index; i < _base_index + _size; i++) {
-                TAllocator::destroy(_allocator, _storage.data() + i);
+                TAllocator::destroy(_allocator, _storage.data + i);
             }
             // then deallocate all memory
-            TAllocator::deallocate(_allocator, _storage.data(), _storage.size());
+            TAllocator::deallocate(_allocator, _storage.data, _storage.size);
         }
 
         constexpr sharray& operator=(const sharray& other) {
@@ -226,15 +227,36 @@ namespace com::saxbophone::codlili {
             return std::numeric_limits<difference_type>::max();
         }
         constexpr void reserve(size_type new_cap) {
-            if (new_cap < _storage.size()) { return; } // no-op
-            // ... rest of code ...
-            throw std::logic_error("Not implemented");
+            if (new_cap < _storage.size) { return; } // no-op
+            // allocate new storage to the requested size
+            decltype(_storage) new_storage = {
+                TAllocator::allocate(_allocator, new_cap),
+                new_cap
+            };
+            // detemine where the elements start
+            size_type base = (new_cap - _size) / 2;
+            // copy in existing elements
+            for (size_type i = 0; i < _size; i++) {
+                TAllocator::construct(
+                    _allocator,
+                    new_storage.data + base + i,
+                    _elements()[i] // TODO: move from instead?
+                );
+                // destroy old object
+                TAllocator::destroy(_allocator, _storage.data + i);
+            }
+            // swap new storage with old
+            std::swap(new_storage.data, _storage.data);
+            // swap sizes
+            std::swap(new_storage.size, _storage.size);
+            // deallocate old storage
+            TAllocator::deallocate(_allocator, new_storage.data, new_storage.size);
         }
         // pair of sizes for cap denotes elements to reserve before and after front
         constexpr void reserve(std::pair<size_type, size_type> bidir_cap) {
             auto [front, back] = bidir_cap;
             size_type new_size = front + back;
-            if (new_size < _storage.size()) { return; } // no-op
+            if (new_size < _storage.size) { return; } // no-op
             if (front < _capacity_behind()) { return; } // no-op
             if (back < _capacity_ahead()) { return; } // no-op
             // allocate new storage
@@ -247,11 +269,11 @@ namespace com::saxbophone::codlili {
                     std::move(_elements()[i])
                 );
                 // destroy old object
-                TAllocator::destroy(_allocator, _storage.data() + i);
+                TAllocator::destroy(_allocator, _storage.data + i);
             }
-            if (_storage.size() != 0) {
+            if (_storage.size != 0) {
                 // deallocate old storage
-                TAllocator::deallocate(_allocator, _storage.data(), _storage.size());
+                TAllocator::deallocate(_allocator, _storage.data, _storage.size);
             }
             // assign new storage
             _storage = {new_storage, new_size};
@@ -259,7 +281,7 @@ namespace com::saxbophone::codlili {
             _base_index = front;
             _size = back;
         }
-        constexpr size_type capacity() const noexcept { return _storage.size(); }
+        constexpr size_type capacity() const noexcept { return _storage.size; }
         constexpr void shrink_to_fit() { /* No implementation required */ }
         // modifiers
         constexpr void clear() noexcept {}
@@ -296,25 +318,21 @@ namespace com::saxbophone::codlili {
             throw std::logic_error("Not implemented");
         }
         constexpr void push_back(const T& value) {
-            if (_base_index + _size == _storage.size()) {
-                // double the length of both ends
-                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
-            }
+            // make sure there's enough space in back for 1 additional element
+            _grow_back(1);
             TAllocator::construct(
                 _allocator,
-                _storage.data() + _base_index + _size,
+                _storage.data + _base_index + _size,
                 value
             );
             _size++;
         }
         constexpr void push_back(T&& value) {
-            if (_base_index + _size == _storage.size()) {
-                // double the length of both ends
-                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
-            }
+            // make sure there's enough space in back for 1 additional element
+            _grow_back(1);
             TAllocator::construct(
                 _allocator,
-                _storage.data() + _base_index + _size,
+                _storage.data + _base_index + _size,
                 value
             );
             _size++;
@@ -324,60 +342,60 @@ namespace com::saxbophone::codlili {
             throw std::logic_error("Not implemented");
         }
         constexpr void pop_back() {
-            TAllocator::destroy(_allocator, _storage.data() + _base_index + _size - 1);
+            TAllocator::destroy(_allocator, _storage.data + _base_index + _size - 1);
             _size--;
             // _base_index is reset to halfway if now empty
             if (_size != 0) {
-                _base_index = _storage.size() / 2;
+                _base_index = _storage.size / 2;
             }
         }
         constexpr void push_front(const T& value) {
-            if (_base_index + _size == _storage.size()) {
-                // double the length of both ends
-                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
-            }
-            TAllocator::construct(
-                _allocator,
-                _storage.data() + _base_index - 1,
-                value
-            );
-            _size++;
-            _base_index--;
+            // if (_base_index + _size == _storage.size()) {
+            //     // double the length of both ends
+            //     reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
+            // }
+            // TAllocator::construct(
+            //     _allocator,
+            //     _storage.data() + _base_index - 1,
+            //     value
+            // );
+            // _size++;
+            // _base_index--;
         }
         constexpr void push_front(T&& value) {
-            if (_base_index + _size == _storage.size()) {
-                // double the length of both ends
-                reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
-            }
-            TAllocator::construct(
-                _allocator,
-                _storage.data() + _base_index - 1,
-                value
-            );
-            _size++;
-            _base_index--;
+            // if (_base_index + _size == _storage.size()) {
+            //     // double the length of both ends
+            //     reserve({(_base_index + 1) * 2, (_storage.size() - _base_index + 1) * 2});
+            // }
+            // TAllocator::construct(
+            //     _allocator,
+            //     _storage.data() + _base_index - 1,
+            //     value
+            // );
+            // _size++;
+            // _base_index--;
         }
         template<class... Args>
         constexpr reference emplace_front(Args&&... args) {
             throw std::logic_error("Not implemented");
         }
         constexpr void pop_front() {
-            TAllocator::destroy(_allocator, _storage.data() + _base_index);
+            TAllocator::destroy(_allocator, _storage.data + _base_index);
             _size--;
             // _base_index goes up one if not empty, otherwise reset to halfway
             if (_size != 0) {
                 _base_index++;
             } else {
-                _base_index = _storage.size() / 2;
+                _base_index = _storage.size / 2;
             }
         }
         constexpr void resize(size_type count) {
-            while (count < _size) {
-                pop_back();
-            }
-            while (count > _size) {
-                push_back(T());
-            }
+            // while (count < _size) {
+            //     pop_back();
+            // }
+            // while (count > _size) {
+            //     push_back(T());
+            // }
         }
         constexpr void resize(size_type count, const value_type& value) {
             throw std::logic_error("Not implemented");
@@ -412,10 +430,10 @@ namespace com::saxbophone::codlili {
         using TAllocator = std::allocator_traits<Allocator>::template rebind_traits<T>;
         // accessors to the actual elements in the sharray, using span as a shortcut
         constexpr std::span<T> _elements() {
-            return _storage.subspan(_base_index, _size);
+            return {_storage.data + _base_index, _size};
         }
         constexpr std::span<const T> _elements() const {
-            return _storage.subspan(_base_index, _size);
+            return {_storage.data + _base_index, _size};
         }
         // how much space is allocated before .front() ?
         constexpr size_type _capacity_behind() const {
@@ -423,7 +441,16 @@ namespace com::saxbophone::codlili {
         }
         // how much space is allocated after .front() ?
         constexpr size_type _capacity_ahead() const {
-            return _storage.size() - _base_index;
+            return _storage.size - _base_index;
+        }
+        // conditional reallocators for front and back insertions
+        constexpr void _grow_front(size_type extra_space) {
+            if (extra_space > _capacity_behind()) {}
+        }
+        constexpr void _grow_back(size_type extra_space) {
+            if (extra_space > _capacity_ahead()) {
+                reserve((_size + extra_space) * 3);
+            }
         }
 
         allocator_type _allocator = Allocator();
@@ -453,7 +480,10 @@ namespace com::saxbophone::codlili {
          * violates the implication that unused allocated storage is... well,
          * allocated but unused (i.e. allocated but not constructed).
          */
-        std::span<T> _storage = {}; // heap-allocated array for storing elements in and its size, wrapped in a span
+        struct {
+            T* data = nullptr; // heap-allocated array for storing elements in and its size, wrapped in a span
+            std::size_t size = 0;
+        } _storage;
         std::size_t _base_index = 0; // 0-based index of first element in _storage to use
         std::size_t _size = 0; // number of stored items
     };
