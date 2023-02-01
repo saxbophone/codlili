@@ -197,13 +197,14 @@ namespace com::saxbophone::codlili {
         }
         // removes the last element from the list
         constexpr void pop_back() {
-            // remove back-1
-            auto behind = _back->prev;
-            // create the backlink from back to whatever was behind behind
-            _back->prev = behind->prev;
-            // if there is something behind behind, link it forward to back
-            if (behind->prev != nullptr) { behind->prev->next = _back; }
-            delete behind;
+            auto old_back = _back;
+            _back = old_back->prev;
+            if (_front == _back) { // if front is now back marker, list is now empty, so set front->next
+                _front->next = nullptr;
+            } else { // otherwise, just clear next pointer of new back node
+                _back->next = nullptr;
+            }
+            delete old_back;
         }
         // resizes the list to hold count elements, removing excess elements if count less than current size, or adding
         // new default-constructed elements at the end if it is greater
